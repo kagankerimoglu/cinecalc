@@ -1,0 +1,129 @@
+/* === Inter Static Fonts (local) ===
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/Inter-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/Inter-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/Inter-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/Inter-SemiBoldItalic.woff2') format('woff2');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+uncomment to use fonts locally instead of google api*/
+
+body {
+  font-family: 'Inter', ui-sans-serif, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background: #f5f5f5;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh;
+}
+.container {
+  max-width: 600px;
+  width: 100%;
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+}
+h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 600;
+  text-align: center;
+  color: #292929;
+}
+label {
+  display: block;
+  margin-top: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #292929;
+}
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border: 1px solid #B3B3B3;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+}
+.row { 
+  display: flex;
+  gap: 16px;
+}
+.row > div {
+  flex: 1;
+}
+.custom-input {
+  display: none;
+}
+button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #2563eb;
+}
+.result {
+  margin-top: 20px;
+  padding: 15px;
+  background: #F2F2F2;
+  border-radius: 8px;
+  color: #292929;
+}
+.footer {
+  margin-top: 15px;
+  text-align: center;
+  font-size: 14px;
+  color: #777777;
+}
+.home-button {
+  display: inline-block;
+  margin-top: 15px;
+  margin-bottom: 0;
+  padding: 8px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #3b82f6;
+  background-color: #e0ecff;
+  border-radius: 20px;
+  text-decoration: none;
+}
+.home-button:hover {
+  background-color: #d0e0ff;
+  color: #2563eb;
+}

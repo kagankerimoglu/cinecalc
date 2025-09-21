@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shutter Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body onload="updateFields()">
+  <div class="container">
+    <h1>Shutter Calculator</h1>
+    <form onsubmit="event.preventDefault(); calculateShutter();">
+      <label for="calcType">Calculation Type</label>
+      <select id="calcType" onchange="updateFields()">
+        <option value="flickerFree">Flicker-Free Shutter Angle</option>
+        <option value="angleToSpeed">Shutter Angle to Shutter Speed</option>
+        <option value="speedToAngle">Shutter Speed to Shutter Angle</option>
+      </select>
+
+      <div id="frameRateInput">
+        <label for="frameRate">Frame Rate (fps)</label>
+        <input type="number" id="frameRate" placeholder="e.g. 24" step="any">
+      </div>
+
+      <div id="shutterAngleInput">
+        <label for="shutterAngle">Shutter Angle (°)</label>
+        <input type="number" id="shutterAngle" placeholder="e.g. 180" step="any">
+      </div>
+
+      <div id="shutterSpeedInput">
+        <label for="shutterSpeed">Shutter Speed (t)</label>
+        <!-- Input type text to allow fractional entry such as "1/50" -->
+        <input type="text" id="shutterSpeed" placeholder="e.g. 1/50 or 0.02">
+      </div>
+
+      <div id="powerFrequencyInput">
+        <label for="powerFrequency">Power Frequency (Hz)</label>
+        <input type="number" id="powerFrequency" placeholder="e.g. 50" step="any">
+      </div>
+
+      <button type="submit">Calculate</button>
+    </form>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <a href="../index.html" class="home-button">🏠 Home</a>
+
+  <div class="footer">
+    © 2025 KAĞAN KERİMOĞLU
+  </div>
+
+  <script>
+    // Update visible input fields based on selected calculation type.
+    function updateFields() {
+      var calcType = document.getElementById("calcType").value;
+      document.getElementById("frameRateInput").style.display = "block";
+      // Hide all optional inputs first.
+      document.getElementById("shutterAngleInput").style.display = "none";
+      document.getElementById("shutterSpeedInput").style.display = "none";
+      document.getElementById("powerFrequencyInput").style.display = "none";
+      
+      if (calcType === "angleToSpeed") {
+        document.getElementById("shutterAngleInput").style.display = "block";
+      } else if (calcType === "speedToAngle") {
+        document.getElementById("shutterSpeedInput").style.display = "block";
+      } else if (calcType === "flickerFree") {
+        document.getElementById("powerFrequencyInput").style.display = "block";
+      }
+    }
+
+    // Helper function to convert a decimal shutter speed to a fraction (reciprocal) format.
+    function decimalToFraction(decimal) {
+      if (decimal <= 0) return "0";
+      if (decimal < 1) {
+        var reciprocal = Math.round(1 / decimal);
+        return "1/" + reciprocal;
+      } else {
+        return decimal.toFixed(2) + " s";
+      }
+    }
+
+    // Helper function to parse a shutter speed input that can be a fraction (e.g., "1/50") or a decimal.
+    function parseShutterSpeed(input) {
+      input = input.trim();
+      if (input.indexOf('/') !== -1) {
+        var parts = input.split('/');
+        if (parts.length !== 2) return NaN;
+        var numerator = parseFloat(parts[0]);
+        var denominator = parseFloat(parts[1]);
+        if (isNaN(numerator) || isNaN(denominator) || denominator === 0) return NaN;
+        return numerator / denominator;
+      } else {
+        return parseFloat(input);
+      }
+    }
+
+    // Main calculation function.
+    function calculateShutter() {
+      var calcType = document.getElementById("calcType").value;
+      var frameRate = parseFloat(document.getElementById("frameRate").value);
+      var shutterAngle = parseFloat(document.getElementById("shutterAngle").value);
+      var shutterSpeedInput = document.getElementById("shutterSpeed").value;
+      var powerFrequency = parseFloat(document.getElementById("powerFrequency").value);
+      var resultDiv = document.getElementById("result");
+
+      if (isNaN(frameRate) || frameRate <= 0) {
+        alert("Please enter a valid frame rate.");
+        return;
+      }
+
+      if (calcType === "angleToSpeed") {
+        if (isNaN(shutterAngle) || shutterAngle <= 0) {
+          alert("Please enter a valid shutter angle.");
+          return;
+        }
+        // Calculate shutter speed from shutter angle.
+        var speed = shutterAngle / (360 * frameRate);
+        var fraction = decimalToFraction(speed);
+        resultDiv.innerHTML = "" +
+          "<p><strong>Shutter Speed:</strong> " + speed.toFixed(6) + " s (" + fraction + ")</p>";
+      } else if (calcType === "speedToAngle") {
+        var shutterSpeed = parseShutterSpeed(shutterSpeedInput);
+        if (isNaN(shutterSpeed) || shutterSpeed <= 0) {
+          alert("Please enter a valid shutter speed (e.g., 1/50 or 0.02).");
+          return;
+        }
+        // Calculate shutter angle from shutter speed.
+        var angle = frameRate * shutterSpeed * 360;
+        resultDiv.innerHTML = "" +
+          "<p><strong>Shutter Angle:</strong> " + angle.toFixed(2) + "°</p>";
+      } else if (calcType === "flickerFree") {
+        if (isNaN(powerFrequency) || powerFrequency <= 0) {
+          alert("Please enter a valid power frequency.");
+          return;
+        }
+        // Calculate flicker-free shutter angle.
+        var flickerAngle = frameRate * (360 / powerFrequency);
+        resultDiv.innerHTML = "" +
+          "<p><strong>Flicker-Free Shutter Angle:</strong> " + flickerAngle.toFixed(2) + "°</p>";
+      }
+    }
+  </script>
+</body>
+</html>

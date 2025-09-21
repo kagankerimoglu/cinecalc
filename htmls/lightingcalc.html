@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lighting Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body onload="init();">
+  <div class="container">
+    <h1>Lighting Calculator</h1>
+    <form onsubmit="event.preventDefault(); calculateLight();">
+      <label for="calcType">Calculation Type</label>
+      <select id="calcType" onchange="updateFields();">
+        <option value="fallOff">Intensity Fall-Off</option>
+        <option value="diameter">Beam Diameter</option>
+        <option value="angle">Beam Angle</option>
+        <option value="distance">Distance</option>
+      </select>
+
+      <div id="fallOffModeContainer" style="display:none">
+        <label for="fallOffMode">Mode</label>
+        <select id="fallOffMode" onchange="updateFields();">
+          <option value="intensity">Illuminance (lux/fc)</option>
+          <option value="fstop">F-Stop</option>
+        </select>
+      </div>
+
+      <!-- Intensity input -->
+      <div id="intensityInput">
+        <label for="intensity">Illuminance (lux/fc)</label>
+        <input type="number" id="intensity" placeholder="e.g. 1000" step="any">
+      </div>
+
+      <!-- F-Stop dropdowns for fall-off -->
+      <div id="fstopInput" style="display:none">
+        <div class="row">
+          <div>
+            <label for="fRatioSource">F-Stop</label>
+            <select id="fRatioSource" onchange="onFNumberChange('fRatioSource'); updateDisplays('fRatioSource');">
+              <option>f/1.0</option>
+              <option>f/1.4</option>
+              <option>f/2.0</option>
+              <option>f/2.8</option>
+              <option>f/4.0</option>
+              <option selected>f/5.6</option>
+              <option>f/8.0</option>
+              <option>f/11</option>
+              <option>f/16</option>
+              <option>f/22</option>
+              <option>f/32</option>
+              <option>Custom</option>
+            </select>
+            <input type="number" id="fRatioSourceCustom" class="custom-input" placeholder="Custom f-number" step="any" oninput="updateDisplays('fRatioSource');">
+          </div>
+          <div>
+            <label for="fRatioSourceStep">Increment</label>
+            <select id="fRatioSourceStep" onchange="updateDisplays('fRatioSource');">
+              <option value="0">+0</option>
+              <option value="1/4">+1/4</option>
+              <option value="1/3">+1/3</option>
+              <option value="1/2">+1/2</option>
+              <option value="2/3">+2/3</option>
+              <option value="3/4">+3/4</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="distanceInput">
+        <label for="distance">Distance (m)</label>
+        <input type="number" id="distance" placeholder="e.g. 10" step="any">
+      </div>
+
+      <div id="distanceRow" class="row" style="display:none;">
+        <div id="distance1Input">
+          <label for="distance1">Distance 1 (m)</label>
+          <input type="number" id="distance1" placeholder="e.g. 5" step="any">
+        </div>
+        <div id="distance2Input">
+          <label for="distance2">Distance 2 (m)</label>
+          <input type="number" id="distance2" placeholder="e.g. 15" step="any">
+        </div>
+      </div>
+
+      <div id="beamAngleInput">
+        <label for="beamAngle">Beam Angle (°)</label>
+        <input type="number" id="beamAngle" placeholder="e.g. 30" step="any">
+      </div>
+
+      <div id="beamDiameterInput">
+        <label for="beamDiameter">Beam Diameter (m)</label>
+        <input type="number" id="beamDiameter" placeholder="e.g. 5" step="any">
+      </div>
+
+      <button type="submit">Calculate</button>
+    </form>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <a href="../index.html" class="home-button">🏠 Home</a>
+
+  <div class="footer">
+    © 2025 KAĞAN KERİMOĞLU
+  </div>
+
+  <script>
+    // Full-stop f-numbers map
+    const fNumberMap = {
+      'f/1.0': Math.sqrt(Math.pow(2,0)),
+      'f/1.4': Math.sqrt(Math.pow(2,1)),
+      'f/2.0': Math.sqrt(Math.pow(2,2)),
+      'f/2.8': Math.sqrt(Math.pow(2,3)),
+      'f/4.0': Math.sqrt(Math.pow(2,4)),
+      'f/5.6': Math.sqrt(Math.pow(2,5)),
+      'f/8.0': Math.sqrt(Math.pow(2,6)),
+      'f/11':  Math.sqrt(Math.pow(2,7)),
+      'f/16':  Math.sqrt(Math.pow(2,8)),
+      'f/22':  Math.sqrt(Math.pow(2,9)),
+      'f/32':  Math.sqrt(Math.pow(2,10))
+    };
+    // Stop increments
+    const stepMap = {
+      '0':    1,
+      '1/4':  Math.pow(2,(1/4)/2),
+      '1/3':  Math.pow(2,(1/3)/2),
+      '1/2':  Math.pow(2,(1/2)/2),
+      '2/3':  Math.pow(2,(2/3)/2),
+      '3/4':  Math.pow(2,(3/4)/2)
+    };
+
+    function onFNumberChange(id) {
+      const sel = document.getElementById(id);
+      const custom = document.getElementById(id + 'Custom');
+      custom.style.display = sel.value === 'Custom' ? 'block' : 'none';
+    }
+    function updateDisplays(id) {
+      const base = getBaseFNumber(id);
+      if (base == null) return;
+      const stepSel = document.getElementById(id + 'Step');
+      Array.from(stepSel.options).forEach(opt => {
+        const stepFactor = stepMap[opt.value];
+        const eff = base * stepFactor;
+        opt.text = `+${opt.value} (f/${eff.toFixed(4)})`;
+      });
+    }
+    function getBaseFNumber(id) {
+      const sel = document.getElementById(id);
+      if (sel.value === 'Custom') {
+        const c = parseFloat(document.getElementById(id + 'Custom').value);
+        return isNaN(c) ? null : c;
+      }
+      return fNumberMap[sel.value] || null;
+    }
+
+    function init() {
+      onFNumberChange('fRatioSource');
+      updateDisplays('fRatioSource');
+      updateFields();
+    }
+
+    function updateFields() {
+      const type = document.getElementById("calcType").value;
+      ["fallOffModeContainer","intensityInput","fstopInput","distanceInput","distanceRow","beamAngleInput","beamDiameterInput"]
+        .forEach(id => document.getElementById(id).style.display = "none");
+
+      if (type === "fallOff") {
+        document.getElementById("fallOffModeContainer").style.display = "block";
+        const mode = document.getElementById("fallOffMode").value;
+        if (mode === "intensity") {
+          document.getElementById("intensityInput").style.display = "block";
+        } else {
+          document.getElementById("fstopInput").style.display = "block";
+        }
+        document.getElementById("distanceRow").style.display = "flex";
+      } else if (type === "diameter") {
+        document.getElementById("beamAngleInput").style.display = "block";
+        document.getElementById("distanceInput").style.display = "block";
+      } else if (type === "angle") {
+        document.getElementById("beamDiameterInput").style.display = "block";
+        document.getElementById("distanceInput").style.display = "block";
+      } else if (type === "distance") {
+        document.getElementById("beamDiameterInput").style.display = "block";
+        document.getElementById("beamAngleInput").style.display = "block";
+      }
+    }
+
+    function calculateLight() {
+      const type = document.getElementById("calcType").value;
+      const resultDiv = document.getElementById("result");
+
+      function showError(msg) {
+        alert(msg);
+        throw new Error(msg);
+      }
+
+      function getValue(id, name) {
+        const v = parseFloat(document.getElementById(id).value);
+        if (isNaN(v)) showError(`Please enter a valid ${name}.`);
+        return v;
+      }
+
+      try {
+        if (type === "fallOff") {
+          const mode = document.getElementById("fallOffMode").value;
+          const d1 = getValue("distance1", "distance 1");
+          const d2 = getValue("distance2", "distance 2");
+          if (d2 === 0) showError("Distance 2 must be non-zero.");
+
+          if (mode === "intensity") {
+            const I1 = getValue("intensity", "intensity");
+            const I2 = I1 * Math.pow((d1 / d2), 2);
+            const stops = Math.log2(I1 / I2);
+            resultDiv.innerHTML = `
+              <p><strong>Fall-Off Intensity:</strong> ${I2.toFixed(3)}</p>
+              <p><strong>Change in Stops:</strong> ${stops.toFixed(2)} EV</p>`;
+          } else {
+            const base = getBaseFNumber('fRatioSource');
+            if (base == null) showError('Please enter a valid F-Stop.');
+            const stepFactor = stepMap[ document.getElementById('fRatioSourceStep').value ];
+            const f1 = base * stepFactor;
+            const stopsChange = 2 * Math.log2(d1 / d2);
+            const f2 = f1 * Math.pow(2, stopsChange / 2);
+            resultDiv.innerHTML = `
+              <p><strong>F-Stop at Distance 2:</strong> f/${f2.toFixed(2)}</p>
+              <p><strong>Change in Stops:</strong> ${stopsChange.toFixed(2)} EV</p>`;
+          }
+
+        } else if (type === "diameter") {
+          const angle = getValue("beamAngle", "beam angle");
+          const d = getValue("distance", "distance");
+          const diameter = 2 * d * Math.tan(angle * Math.PI / 180 / 2);
+          resultDiv.innerHTML = `
+            <p><strong>Beam Diameter:</strong> ${diameter.toFixed(3)} m</p>`;
+
+        } else if (type === "angle") {
+          const diameter = getValue("beamDiameter", "beam diameter");
+          const d = getValue("distance", "distance");
+          if (d === 0) showError("Distance must be non-zero.");
+          const angle = 2 * Math.atan(diameter / (2 * d)) * 180 / Math.PI;
+          resultDiv.innerHTML = `
+            <p><strong>Beam Angle:</strong> ${angle.toFixed(2)}°</p>`;
+
+        } else if (type === "distance") {
+          const diameter = getValue("beamDiameter", "beam diameter");
+          const angle = getValue("beamAngle", "beam angle");
+          const rad = angle * Math.PI / 180 / 2;
+          if (Math.tan(rad) === 0) showError("Beam angle too small.");
+          const distance = diameter / (2 * Math.tan(rad));
+          resultDiv.innerHTML = `
+            <p><strong>Distance:</strong> ${distance.toFixed(3)} m</p>`;
+        }
+      } catch (e) {
+        // error already handled
+      }
+    }
+  </script>
+</body>
+</html>

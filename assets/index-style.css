@@ -1,0 +1,87 @@
+/* === Inter Static Fonts (local) ===
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/Inter-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/Inter-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/Inter-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/Inter-SemiBoldItalic.woff2') format('woff2');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+uncomment to use fonts locally instead of google api*/
+
+/* Make widths include padding & border
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+*/
+
+body {
+  font-family: 'Inter', ui-sans-serif, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh;
+}
+.container {
+  max-width: 600px;
+  width: 100%;
+  background: #ffffff;
+  padding: 24px 24px 2px 24px;
+  border-radius: 24px;
+  box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+  text-align: center;
+}
+h1 {
+  margin-bottom: 20px;
+  font-size: 30px;
+  font-weight: 700;
+  color: #292929;
+}
+.calc-button {
+  display: block;
+  width: 75%;
+  padding: 10px 0;
+  margin: 12px auto; 
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.calc-button:hover {
+  background-color: #2563eb;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transform: translateY(-0.5px);
+}
+.updatenote {
+  font-size: 15px;
+  color: #555555;
+  font-weight: 555;
+  margin-top: 16px;
+}
